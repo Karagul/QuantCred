@@ -27,11 +27,12 @@ In QuantCred, survival curves are given as functions. For example,
 the following defines a survival curve `Q` with a constant hazard
 rate of 0.0050/year (50 bps)::
 
-  from math import exp
+    from math import exp
 
-  def expdecay(r, t):
-      return exp(-r * t)
-  Q = lambda t: expdexay(0.005, t)
+    def expdecay(r, t):
+        return exp(-r * t)
+    Q = lambda t: expdexay(0.005, t)
 
 Most pricing functionality requires both a survival curve :math:`Q(t)`
-and discount curve :math:`Z(t)` as input. 
+and discount curve :math:`Z(t)` as input. In both cases, it is assumed
+that time is measured in years.

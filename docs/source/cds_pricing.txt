@@ -1,0 +1,40 @@
+CDS Pricing
+===========
+
+QuantCred provides functionality for pricing credit default swaps
+(CDS's).
+
+A CDS is a contract consisting of two parts ("legs"):
+
+1. An annuity paid by the protection seller until the named creditor
+   defaults. This is known as a "risky annuity".
+2. A payment paid by the protection seller when the named creditor
+   default.
+
+Every CDS also has a maturity :math:`T`. Both legs of the CDS are
+cancelled at this time. 
+
+The value of a CDS is the difference between these two legs.
+
+Payment until Default
+---------------------
+
+Suppose a continuous risky annuity is given at a rate of one unit of
+currency per year. If :math:`Z(t)` is the discount curve related to that
+currency and :math:`Q(t)` is the survival curve of the creditor, then
+the value ("RPV01") of this risky annuity is given by
+
+.. math:: \text{RPV01} = \int_{0}^{T} Q(t)Z(t) dt.
+
+In QuantCred, this may be calculated with the `RPV01_continuous`
+function::
+
+    from math      import exp
+    from quantcred import RPV01_continuous
+
+    def expdecay(r, t):
+        return exp(-r * t)
+    Q = lambda t: expdecay(0.0050, t) # 50 bps hazard rate
+    Z = lambda t: expdecay(1.5000, t) # 150 bps interest
+    T = 1 # 1 year
+    annuity = RPV01_continuous(Q, Z, T)

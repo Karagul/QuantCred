@@ -8,3 +8,4 @@ QuantCred is a credit derivatives pricing framework for Python 3.
    :maxdepth: 2
 
    survival_curve
+   cds_pricing
