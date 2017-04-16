@@ -84,6 +84,8 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 html_theme = 'alabaster'
+mathjax_path = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
+ 
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

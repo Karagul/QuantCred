@@ -3,9 +3,8 @@ QuantCred
 
 QuantCred is a credit derivatives pricing framework for Python 3.
 
-:math:`Q(t) = \exp \left( - \int_0^t r(u) du \right)`.
-
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+   survival_curve

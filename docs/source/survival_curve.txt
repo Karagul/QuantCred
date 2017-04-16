@@ -1,23 +1,37 @@
-QuantCred provides tools for pricing credit derivatives. But this
-requires first having some metric of creditworthiness. 
+Survival Curves
+===============
 
-One such metric is the **survival probability**, which is the
-probability that a given creditor does not go into default up to
-some time in the future. The function that maps time horizons to the
-corresponding survival probabilities are called **survival curves**.
+The pricing of credit derivatives requires some metric for
+creditworthiness. One such metric is the probability for which a
+creditor remains solvent up to some time horizon.
 
-A survival curve $Q(t)$ should satisfy the following:
+This may be formalized as a **survival curve** :math:`Q`, a function
+that maps time horizons :math:`t` to corresponding survival
+probabilities :math:`Q(t)`.
 
-1. $Q(0)=1$, 
-2. $Q'(t) < 0$.
+Survival curves must satisfy two mathematical conditions:
 
-When such conditions hold, one may define the **hazard rate curve**
-$\lambda (t)$ with the equation
+1. :math:`Q(0) = 1`, and
+2. :math:`Q(t) \geq 0`, and
+3. :math:`Q'(t) \leq 0`.
 
-$$Q(t) = \exp \left( - \int_{0}^{t} \lambda (u) du \right).$$
+It is then possible to derive a **hazard rate curve** :math:`\lambda`
+defined by
 
-Hazard rates are to survival curves as interest short rates are to
-discount curves.
+.. math:: \lambda (t) = - \frac{Q'(t)}{Q(t)}.
 
-The pricing functionality provided in QuantCred requires inputing both
-a survival curve $Q$ as well as a discount curve $Z$.
+Survival curves are analogous to discount curves. In the same way,
+hazard rates are analogous to interest short rates.
+
+In QuantCred, survival curves are given as functions. For example,
+the following defines a survival curve `Q` with a constant hazard
+rate of 0.0050/year (50 bps)::
+
+  from math import exp
+
+  def expdecay(r, t):
+      return exp(-r * t)
+  Q = lambda t: expdexay(0.005, t)
+
+Most pricing functionality requires both a survival curve :math:`Q(t)`
+and discount curve :math:`Z(t)` as input. 
