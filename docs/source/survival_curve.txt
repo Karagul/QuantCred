@@ -1,0 +1,23 @@
+QuantCred provides tools for pricing credit derivatives. But this
+requires first having some metric of creditworthiness. 
+
+One such metric is the **survival probability**, which is the
+probability that a given creditor does not go into default up to
+some time in the future. The function that maps time horizons to the
+corresponding survival probabilities are called **survival curves**.
+
+A survival curve $Q(t)$ should satisfy the following:
+
+1. $Q(0)=1$, 
+2. $Q'(t) < 0$.
+
+When such conditions hold, one may define the **hazard rate curve**
+$\lambda (t)$ with the equation
+
+$$Q(t) = \exp \left( - \int_{0}^{t} \lambda (u) du \right).$$
+
+Hazard rates are to survival curves as interest short rates are to
+discount curves.
+
+The pricing functionality provided in QuantCred requires inputing both
+a survival curve $Q$ as well as a discount curve $Z$.
