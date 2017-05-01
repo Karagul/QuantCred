@@ -16,8 +16,8 @@ cancelled at this time.
 
 The value of a CDS is the difference between these two legs.
 
-Payment until Default
----------------------
+Payments until default
+----------------------
 
 Suppose a continuous risky annuity is given at a rate of one unit of
 currency per year. If :math:`Z(t)` is the discount curve related to that
@@ -36,5 +36,45 @@ function::
         return exp(-r * t)
     Q = lambda t: expdecay(0.0050, t) # 50 bps hazard rate
     Z = lambda t: expdecay(1.5000, t) # 150 bps interest
-    T = 1 # 1 year
+    T = 3 # three years until annuity expires
     annuity = RPV01_continuous(Q, Z, T)
+
+In the real world, however, annuities are paid discretely. So suppose
+that payments $\Delta_1,\ldots,\Delta_N$ are made at times
+$t_1,t_2,\ldots,t_N$ provided that the underlying creditor is solvent.
+The value of this annuity is given by
+
+$$\sum_{n=1}^{N} \Delta_n Q(t_n) Z(t_n).$$
+
+We often set $\Delta_n$ to be the time between $t_{n-1}$ and $t_n$
+according to some day counting convention. The result of this is that
+one unit of currency is paid per year. The corresponding value of the
+annuity is a discrete version of the RPV01.
+
+Let the default time be denoted as $\tau$. And let $t_m = \max_{n}(t_n
+< \tau)$ be the last payment date before the default. And suppose that
+the default happens before the next payment date $t_{m+1}$. An
+additional payment is made at $\tau$. This payment is equal to the
+time difference between $t_m$ and $\tau$. This is an accruel payment.
+
+The discrete RPV01 must be adjusted to accomidated the accrued premium
+paid at default. The adjusted RPV01 is given by
+
+$$\sum_{n} \Delta_n Z(t_n) \frac{Q(t_n)+Q(t_{n-2})}{2}.$$
+
+This is equivalent to a trapezoidal approximation of the continuous
+RPV01 with $(t_n,t_{n-1})$ forming the subintervals of integration.
+
+Quantcred provides an RPV01 function for discrete payments. As with the
+continuous version, this function requires $Q$, $Z$ and $T$ as input.
+However, it also requires one to input a payment schedule (a list of
+floats) as well::
+
+    from quantcred import RPV01_discrete
+    
+    payment_schedule = [0.5 * i for i in range(7)] #semi-annual payments
+    annuity = RPV01_discrete(Q,Z,T, payment_schedule)
+
+The day-counting function is calculated under Actual/Actual conventions.
+
+
