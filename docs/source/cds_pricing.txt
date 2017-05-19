@@ -16,7 +16,7 @@ cancelled at this time.
 
 The value of a CDS is the difference between these two legs.
 
-Payments until default
+Payments Until Default
 ----------------------
 
 Suppose a continuous risky annuity is given at a rate of one unit of
@@ -40,35 +40,36 @@ function::
     annuity = RPV01_continuous(Q, Z, T)
 
 In the real world, however, annuities are paid discretely. So suppose
-that payments $\Delta_1,\ldots,\Delta_N$ are made at times
-$t_1,t_2,\ldots,t_N$ provided that the underlying creditor is solvent.
-The value of this annuity is given by
+that payments :math:`\Delta_1,\ldots,\Delta_N` are made at times
+:math:`t_1,t_2,\ldots,t_N` provided that the underlying creditor is
+solvent. The value of this annuity is given by
 
-$$\sum_{n=1}^{N} \Delta_n Q(t_n) Z(t_n).$$
+.. math:: \sum_{n=1}^{N} \Delta_n Q(t_n) Z(t_n).
 
-We often set $\Delta_n$ to be the time between $t_{n-1}$ and $t_n$
-according to some day counting convention. The result of this is that
-one unit of currency is paid per year. The corresponding value of the
-annuity is a discrete version of the RPV01.
+We often set :math:`\Delta_n` to be the time between :math:`t_{n-1}`
+and :math:`t_n` according to some day counting convention. The result
+of this is that one unit of currency is paid per year. The corresponding
+value of the annuity is a discrete version of the RPV01.
 
-Let the default time be denoted as $\tau$. And let $t_m = \max_{n}(t_n
-< \tau)$ be the last payment date before the default. And suppose that
-the default happens before the next payment date $t_{m+1}$. An
-additional payment is made at $\tau$. This payment is equal to the
-time difference between $t_m$ and $\tau$. This is an accruel payment.
+Let the default time be denoted as :math:`\tau`. And let :math:`t_m =
+\max_{n}(t_n < \tau)` be the last payment date before the default. And
+suppose that the default happens before the next payment date
+:math`t_{m+1}`. An additional payment is made at :math:`\tau`. This
+payment is equal to the time difference between :math:`t_m` and
+:math:`\tau`. This is the accrual payment.
 
 The discrete RPV01 must be adjusted to accomidated the accrued premium
 paid at default. The adjusted RPV01 is given by
 
-$$\sum_{n} \Delta_n Z(t_n) \frac{Q(t_n)+Q(t_{n-2})}{2}.$$
+.. math:: \sum_{n} \Delta_n Z(t_n) \frac{Q(t_n)+Q(t_{n-2})}{2}.
 
 This is equivalent to a trapezoidal approximation of the continuous
-RPV01 with $(t_n,t_{n-1})$ forming the subintervals of integration.
+RPV01 with :math:`(t_n,t_{n-1})` forming the subintervals of integration.
 
-Quantcred provides an RPV01 function for discrete payments. As with the
-continuous version, this function requires $Q$, $Z$ and $T$ as input.
-However, it also requires one to input a payment schedule (a list of
-floats) as well::
+Quantcred provides an RPV01 function for discrete payments. As with
+the continuous version, this function requires :math:`Q`, :math:`Z`
+and :math:`T` as input.  However, it also requires one to input a
+payment schedule (a list of floats) as well::
 
     from quantcred import RPV01_discrete
     
@@ -77,4 +78,66 @@ floats) as well::
 
 The day-counting function is calculated under Actual/Actual conventions.
 
+Payment at Default
+------------------
 
+Consider a unit of currency given at default provided that the default
+occurs before expiry :math:`T`. The probability that the default will
+occur between :math:`t` and :math:`t+dt` is :math:`Q(t)-Q(t+dt)`. A
+payment at default in this case has a present value of
+
+.. math:: Z(t)(Q(t)-Q(t+dt)) = -Z(t)Q'(t)dt.
+
+Integrating this expression gives the present value of the payment
+at default without assumption of when the default will happen:
+
+.. math:: -\int_0^T Z(t)Q'(t) dt
+
+In Quantcred, a payment of default is given by the `protection_PV`
+function.
+
+Credit Default Swaps
+--------------------
+
+A credit default swap has two counterparties: a protection seller
+and a protection buyer. The protection seller gaurantees a payment
+of default of some creditor up to some expiry :math:`T`. In exchange,
+the protection buyer pays a risky annuity (up to time :math:`T`) to
+the protection seller. The annual amount of ther per-notional notional
+is known as the spread :math:`S`.
+
+They payment of default per unit notional is :math:`(1-R)`, where
+:math:`R` is the recovery rate with respect to the creditor's
+bond. This is the fraction of the bond's face value that the creditor
+pays to their bond holders at default.
+
+The value of the protection that the protection seller offers per unit
+notional is known as the "protection leg":
+
+.. math:: \text{protection leg} = (R-1)\int_{0}^{T} Z(t) Q'(t) dt.
+
+The premium paid by the protection buyer is known as the "premium leg":
+
+.. math:: \text{protection leg} = S \cdot RPV01
+
+The par spread is the value of :math:`S` that makes these legs equal
+in value.  In a fair contract, the spread of the protection leg is the
+par spread at the time of contract initialization. The par spread is
+given by
+
+.. math:: S = \frac{\text{protection leg}}{\text{RPV01}}.
+
+The following calculates the par spread::
+
+    from math import exp
+    from quantcred import protection_PV, RPV01_continuous
+
+    Q = lambda t: exp(-t * 0.0050) # 50 bps hazard rate
+    Z = lambda t: exp(-t * 0.0150) # 150 bps interest rate
+    T = 3 # three years
+    R = 0.40 # 40% recovery rate
+    
+    annuity = RPV01_continuous(Q, Z, T)
+    protection_leg = (1-R) * protection_PV(Q, Z, T)
+
+    par_spread = protection_leg / annuity
